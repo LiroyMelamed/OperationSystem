@@ -1,5 +1,5 @@
 /*
-** server.c -- a stream socket server demo
+** server.c -- barak and liroy
 */
 
 #include <stdio.h>
@@ -25,7 +25,6 @@ void *newCon(void *new_fd)
 {
  i++;
  int message = *((int *)new_fd);
- printf("Server: sending message to the client");
  send(message, "Hello, world!", 13, 0);
 }
 
@@ -130,25 +129,24 @@ int main(void)
  { // main accept() loop
   sin_size = sizeof their_addr;
   new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
-  inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
-  printf("Server: got connection from %s\n", s);
+
   if (new_fd == -1)
   {
    perror("accept");
    continue;
   }
+
+  inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
+  printf("Server: got connection from %s\n", s);
+
+  if (pthread_create(&tid[i++], NULL, newCon, &new_fd) != 0)
+   // Error in creating thread
+   printf("Failed to create thread\n");
   else
   {
-   if (pthread_create(&tid[i++], NULL, newCon, &new_fd) != 0)
-    // Error in creating thread
-    printf("Failed to create thread\n");
-   else
-   {
-    printf("Server: creating thread\n");
-    pthread_create(&tid[i++], NULL, newCon, &new_fd);
-   }
+   printf("Server: creating thread\n");
+   pthread_create(&tid[i++], NULL, newCon, &new_fd);
   }
-
-  return 0;
  }
+ return 0;
 }

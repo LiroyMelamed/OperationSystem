@@ -19,6 +19,16 @@
 
 #define BACKLOG 10 // how many pending connections queue will hold
 
+int i = 0; // number of acctive threads
+
+void *newCon(void *new_fd)
+{
+ i++;
+ int message = *((int *)new_fd);
+ printf("Server: sending message to the client");
+ send(message, "Hello, world!", 13, 0);
+}
+
 void sigchld_handler(int s)
 {
  // waitpid() might overwrite errno, so we save and restore it:
@@ -37,7 +47,6 @@ void *get_in_addr(struct sockaddr *sa)
  {
   return &(((struct sockaddr_in *)sa)->sin_addr);
  }
-
  return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
@@ -113,33 +122,33 @@ int main(void)
   exit(1);
  }
 
- printf("server: waiting for connections...\n");
+ printf("Server: waiting for connections...\n");
+
+ pthread_t tid[BACKLOG];
 
  while (1)
  { // main accept() loop
   sin_size = sizeof their_addr;
   new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
+  inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
+  printf("Server: got connection from %s\n", s);
   if (new_fd == -1)
   {
    perror("accept");
    continue;
   }
-
-  inet_ntop(their_addr.ss_family,
-            get_in_addr((struct sockaddr *)&their_addr),
-            s, sizeof s);
-  printf("server: got connection from %s\n", s);
-
-  if (!fork())
-  {               // this is the child process
-   close(sockfd); // child doesn't need the listener
-   if (send(new_fd, "Hello, world!", 13, 0) == -1)
-    perror("send");
-   close(new_fd);
-   exit(0);
+  else
+  {
+   if (pthread_create(&tid[i++], NULL, newCon, &new_fd) != 0)
+    // Error in creating thread
+    printf("Failed to create thread\n");
+   else
+   {
+    printf("Server: creating thread\n");
+    pthread_create(&tid[i++], NULL, newCon, &new_fd);
+   }
   }
-  close(new_fd); // parent doesn't need this
- }
 
- return 0;
+  return 0;
+ }
 }

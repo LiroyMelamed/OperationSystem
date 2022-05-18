@@ -48,13 +48,16 @@ void *new_func(void *sock)
             char *curr = top();
             send(sock_id, curr, strlen(curr), 0);
         }
+        else if (!strcmp(client_text, "CLOSE"))
+        {
+            close(fd);
+            close(sock_id);
+        }
         else
         {
             printf("Invalid command was entered\n");
         }
-        close(fd);
     }
-    close(sock_id);
 }
 
 int main(int argc, char const *argv[])
@@ -71,7 +74,7 @@ int main(int argc, char const *argv[])
     // listen for connections
     listen(server_sock, 10);
     map = (struct nodeMap *)mmap(NULL, sizeof(struct nodeMap *), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    map->first_in = (struct node *)mmap(NULL, sizeof(struct node) * 10000, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, PUS0);
+    map->first_in = (struct node *)mmap(NULL, sizeof(struct node) * 10000, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     while (1)
     {
         int client_sock = accept(server_sock, NULL, NULL);

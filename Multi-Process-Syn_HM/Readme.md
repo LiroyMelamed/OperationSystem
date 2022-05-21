@@ -6,7 +6,7 @@ Barak Amram & Liroy Melamed
 
 Our project operate synchronized multi-process server using a stack.
 
-# The way we made our project:
+# Project information:
 
 Our server can listen up to 10 clients using a thread.
 
@@ -18,9 +18,7 @@ Pop - pop the head of the stack.
 
 Top - reads the head of the stack and returns it.
 
-The server allocates space in the stack using a shared mmap.
-
-# How to use our project:
+# Project instruction:
 
 Write "make all".
 
